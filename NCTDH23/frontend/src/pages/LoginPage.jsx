@@ -43,9 +43,7 @@ const LoginPage = () => {
     <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full bg-white rounded-3xl p-8 border border-gray-100 shadow-xl space-y-6">
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-sky-600 to-blue-500 mx-auto flex items-center justify-center text-white shadow-md shadow-sky-100">
-            <GraduationCap className="w-7 h-7" />
-          </div>
+          <img src="/logo.png" alt="EduJob Logo" className="w-14 h-14 object-contain mx-auto shadow-xs rounded-xl" />
           <h2 className="text-2xl font-extrabold text-slate-900">Đăng Nhập Tài Khoản</h2>
           <p className="text-xs text-gray-500">Chào mừng bạn quay trở lại với Cổng Việc Làm Sinh Viên EduJob</p>
         </div>

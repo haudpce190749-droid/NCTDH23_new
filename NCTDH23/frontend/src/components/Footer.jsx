@@ -9,10 +9,8 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-slate-800">
           {/* Col 1: Brand */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-sky-600 flex items-center justify-center text-white shadow-md">
-                <GraduationCap className="w-6 h-6" />
-              </div>
+            <div className="flex items-center gap-2.5">
+              <img src="/logo.png" alt="EduJob Logo" className="w-10 h-10 object-contain rounded-xl bg-white p-1 shadow-md" />
               <span className="text-xl font-bold text-white">EduJob</span>
             </div>
             <p className="text-sm text-slate-400 leading-relaxed">
@@ -75,7 +73,7 @@ const Footer = () => {
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2.5">
                 <MapPin className="w-4 h-4 text-sky-500 mt-0.5 flex-shrink-0" />
-                <span>Đại học Bách Khoa Hà Nội, Hai Bà Trưng, Hà Nội</span>
+                <span>An Bình, Ninh Kiều, Cần Thơ</span>
               </li>
               <li className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-sky-500 flex-shrink-0" />

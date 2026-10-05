@@ -39,10 +39,8 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           {/* Brand Logo */}
           <div className="flex items-center">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-600 to-blue-500 flex items-center justify-center text-white shadow-md shadow-sky-100">
-                <GraduationCap className="w-6 h-6" />
-              </div>
+            <Link to="/" className="flex items-center gap-2.5">
+              <img src="/logo.png" alt="EduJob Logo" className="w-10 h-10 object-contain rounded-lg shadow-xs" />
               <div>
                 <span className="text-lg font-bold bg-gradient-to-r from-sky-700 to-blue-600 bg-clip-text text-transparent">
                   EduJob
