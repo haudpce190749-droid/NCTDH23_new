@@ -1,21 +1,30 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
+let transporterInstance = null;
+
 const getTransporter = () => {
+  if (transporterInstance) return transporterInstance;
+
   const user = (process.env.EMAIL_USER || '').trim();
   const pass = (process.env.EMAIL_APP_PASSWORD || '').replace(/\s+/g, '');
 
   if (!user || !pass || pass === 'your_16_digit_app_password_here') {
-    throw new Error('Chưa cấu hình tài khoản gửi Email (EMAIL_USER hoặc EMAIL_APP_PASSWORD).');
+    throw new Error('Chưa cấu hình tài khoản gửi Email (EMAIL_USER hoặc EMAIL_APP_PASSWORD trong file .env).');
   }
 
-  return nodemailer.createTransport({
+  transporterInstance = nodemailer.createTransport({
     service: 'gmail',
+    pool: true,
+    maxConnections: 3,
+    maxMessages: 50,
     auth: {
       user: user,
       pass: pass,
     },
   });
+
+  return transporterInstance;
 };
 
 /**
@@ -26,7 +35,7 @@ const getTransporter = () => {
  */
 const sendOtpEmail = async (toEmail, otpCode, purpose = 'register') => {
   const transporter = getTransporter();
-  const emailUser = process.env.EMAIL_USER || 'jobnexa.vn@gmail.com';
+  const emailUser = process.env.EMAIL_USER || 'congtytuyendungdoanhnghiep@gmail.com';
   const fromName = process.env.EMAIL_FROM_NAME || 'EduJob - Cổng Tuyển Dụng Sinh Viên';
 
   const title = purpose === 'register' ? 'Mã Xác Thực Đăng Ký Tài Khoản' : 'Mã Xác Thực Đặt Lại Mật Khẩu';

@@ -3,6 +3,12 @@ import axios from 'axios';
 const CLOUD_API_URL = 'https://nctdh23-new.onrender.com/api';
 
 const getInitialBaseUrl = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     // If opened on localhost or 127.0.0.1
@@ -22,7 +28,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 60000, // 60s for cloud cold starts
+  timeout: 120000, // 120s for cloud cold starts and SMTP delivery
 });
 
 // Attach JWT token to requests
@@ -60,7 +66,7 @@ api.interceptors.response.use(
     }
 
     if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
-      error.userFriendlyMessage = 'Máy chủ đang khởi động lại (Cold start). Vui lòng đợi khoảng 30 giây rồi thử lại!';
+      error.userFriendlyMessage = 'Máy chủ phản hồi chậm hoặc đang gửi mail. Nếu bạn đã nhận được mã trong email, hãy bấm nút "Đã nhận mã" để tiếp tục!';
     } else if (!error.response) {
       error.userFriendlyMessage = 'Không thể kết nối đến máy chủ Backend. Vui lòng kiểm tra kết nối mạng hoặc khởi động backend!';
     }

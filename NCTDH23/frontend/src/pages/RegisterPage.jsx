@@ -60,11 +60,16 @@ const RegisterPage = () => {
       setInfoMsg(res.message || 'Mã xác thực OTP đã được gửi đến email của bạn.');
     } catch (err) {
       console.error('Send OTP Error:', err);
-      const msg =
-        err.response?.data?.error ||
-        err.userFriendlyMessage ||
-        'Không thể gửi mã OTP. Vui lòng kiểm tra lại email hoặc kết nối máy chủ.';
-      setErrorMsg(msg);
+      const errMsg = err.response?.data?.error || err.userFriendlyMessage || '';
+      
+      // If error indicates cooldown or already sent, still allow proceeding to Step 2
+      if (err.response?.status === 429 || errMsg.includes('đợi') || errMsg.includes('sau giây lát')) {
+        setStep(2);
+        setResendCountdown(30);
+        setInfoMsg('Mã xác thực đã được gửi đến email của bạn. Vui lòng kiểm tra hòm thư!');
+      } else {
+        setErrorMsg(errMsg || 'Không thể gửi mã OTP. Vui lòng kiểm tra lại email hoặc kết nối máy chủ.');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -82,7 +87,7 @@ const RegisterPage = () => {
       setResendCountdown(60);
       setInfoMsg('Đã gửi lại mã OTP mới vào hòm thư của bạn.');
     } catch (err) {
-      const msg = err.response?.data?.error || 'Không thể gửi lại mã OTP. Vui lòng thử lại sau.';
+      const msg = err.response?.data?.error || 'Không thể gửi lại mã OTP. Vui lòng thử lại sau giây lát.';
       setErrorMsg(msg);
     } finally {
       setSubmitting(false);
@@ -148,19 +153,29 @@ const RegisterPage = () => {
 
         {/* Step Indicator Progress */}
         <div className="flex items-center justify-center gap-2">
-          <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
-            step === 1 ? 'bg-sky-100 text-sky-700' : 'bg-green-100 text-green-700'
-          }`}>
+          <button
+            type="button"
+            onClick={() => setStep(1)}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+              step === 1 ? 'bg-sky-100 text-sky-700' : 'bg-green-100 text-green-700'
+            }`}
+          >
             {step === 2 ? <CheckCircle2 className="w-3.5 h-3.5" /> : <span>1</span>}
             <span>Thông tin</span>
-          </div>
+          </button>
           <div className="w-6 h-0.5 bg-gray-200" />
-          <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
-            step === 2 ? 'bg-sky-600 text-white' : 'bg-gray-100 text-gray-400'
-          }`}>
+          <button
+            type="button"
+            onClick={() => {
+              if (email) setStep(2);
+            }}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+              step === 2 ? 'bg-sky-600 text-white' : 'bg-gray-100 text-gray-500 hover:text-gray-800'
+            }`}
+          >
             <span>2</span>
             <span>Xác thực OTP</span>
-          </div>
+          </button>
         </div>
 
         {/* Notifications */}
@@ -311,6 +326,19 @@ const RegisterPage = () => {
                 )}
               </button>
             </form>
+
+            {/* Shortcut to Step 2 if user already has OTP */}
+            {email && (
+              <div className="text-center pt-2">
+                <button
+                  type="button"
+                  onClick={() => setStep(2)}
+                  className="text-xs text-sky-600 hover:underline font-semibold cursor-pointer"
+                >
+                  👉 Đã nhận được mã OTP trong hòm thư? Nhập mã tại đây
+                </button>
+              </div>
+            )}
           </>
         )}
 
@@ -320,14 +348,14 @@ const RegisterPage = () => {
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between">
               <div>
                 <div className="text-[11px] text-gray-500 font-semibold uppercase">Email xác nhận</div>
-                <div className="text-xs font-bold text-slate-800">{email}</div>
+                <div className="text-xs font-bold text-slate-800">{email || 'Chưa nhập email'}</div>
               </div>
               <button
                 type="button"
                 onClick={() => { setStep(1); setErrorMsg(''); setInfoMsg(''); }}
                 className="text-xs font-bold text-sky-600 hover:underline flex items-center gap-1 cursor-pointer"
               >
-                <ArrowLeft className="w-3.5 h-3.5" /> Đổi Email
+                <ArrowLeft className="w-3.5 h-3.5" /> Đổi Email / Mật khẩu
               </button>
             </div>
 
@@ -378,7 +406,7 @@ const RegisterPage = () => {
               {submitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Đang xác thực OTP & khởi tạo tài khoản...</span>
+                  <span>Đang xác thực OTP & hoàn tất đăng ký...</span>
                 </>
               ) : (
                 <>
