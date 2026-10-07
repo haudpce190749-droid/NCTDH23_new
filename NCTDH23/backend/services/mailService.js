@@ -1,45 +1,21 @@
-const dns = require('dns').promises;
-const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-const EMAIL_USER = (process.env.EMAIL_USER || 'jobnexa.vn@gmail.com').trim();
-const EMAIL_PASS = (process.env.EMAIL_APP_PASSWORD || 'ispxgzujbwtkuyjo').replace(/\s+/g, '');
+const RESEND_API_KEY = process.env.RESEND_API_KEY || (process.env.RESEND_KEY_PART1 ? process.env.RESEND_KEY_PART1 + process.env.RESEND_KEY_PART2 : '');
+const FROM_EMAIL = process.env.RESEND_FROM || 'EduJob <onboarding@resend.dev>';
 const FROM_NAME = process.env.EMAIL_FROM_NAME || 'EduJob - Cổng Tuyển Dụng Sinh Viên';
 
 /**
- * Resolve IPv4 address directly for smtp.gmail.com
+ * Send OTP Verification Email via Resend REST API (HTTPS Port 443)
+ * @param {string} toEmail 
+ * @param {string} otpCode 
+ * @param {string} purpose 
  */
-const getGmailIPv4 = async () => {
-  try {
-    const addresses = await dns.resolve4('smtp.gmail.com');
-    if (addresses && addresses.length > 0) {
-      return addresses[0];
-    }
-  } catch (err) {
-    console.warn('[DNS] resolve4 failed, using default IPv4 fallback:', err.message);
-  }
-  return '74.125.130.108'; // Reliable Google SMTP IPv4
-};
-
 const sendOtpEmail = async (toEmail, otpCode, purpose = 'register') => {
-  const hostIp = await getGmailIPv4();
+  const apiKey = RESEND_API_KEY || process.env.RESEND_API_KEY;
 
-  const transporter = nodemailer.createTransport({
-    host: hostIp,
-    port: 465,
-    secure: true,
-    auth: {
-      user: EMAIL_USER,
-      pass: EMAIL_PASS,
-    },
-    tls: {
-      servername: 'smtp.gmail.com',
-      rejectUnauthorized: false,
-    },
-    connectionTimeout: 60000, // 60s
-    greetingTimeout: 60000,   // 60s
-    socketTimeout: 60000,     // 60s
-  });
+  if (!apiKey) {
+    throw new Error('Chưa cấu hình RESEND_API_KEY trong biến môi trường hoặc file .env.');
+  }
 
   const title = purpose === 'register' ? 'Mã Xác Thực Đăng Ký Tài Khoản' : 'Mã Xác Thực Đặt Lại Mật Khẩu';
   const subtitle = purpose === 'register' 
@@ -85,7 +61,7 @@ const sendOtpEmail = async (toEmail, otpCode, purpose = 'register') => {
           </p>
         </div>
         <div class="footer">
-          <p>Email được gửi tự động từ <strong>${EMAIL_USER}</strong></p>
+          <p>Email được gửi tự động qua hệ thống bảo mật <strong>EduJob</strong></p>
           <p>© 2026 EduJob Marketplace. All rights reserved.</p>
         </div>
       </div>
@@ -93,16 +69,34 @@ const sendOtpEmail = async (toEmail, otpCode, purpose = 'register') => {
     </html>
   `;
 
-  const mailOptions = {
-    from: `"${FROM_NAME}" <${EMAIL_USER}>`,
-    to: toEmail,
-    subject: `[${otpCode}] ${title} - ${FROM_NAME}`,
-    html: htmlContent,
-  };
+  console.log(`[Resend HTTPS] Sending OTP ${otpCode} to ${toEmail}...`);
 
-  const info = await transporter.sendMail(mailOptions);
-  console.log(`[Email Sent] Đã gửi mã OTP ${otpCode} tới ${toEmail}: ${info.messageId}`);
-  return { success: true, messageId: info.messageId };
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: FROM_EMAIL,
+      to: [toEmail],
+      subject: `[${otpCode}] ${title} - ${FROM_NAME}`,
+      html: htmlContent,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error('[Resend Error]', response.status, data);
+    if (data.message?.includes('only send testing emails')) {
+      throw new Error(`Tài khoản Resend thử nghiệm chỉ cho phép gửi đến email đăng ký của bạn (${data.message.match(/\((.*?)\)/)?.[1] || 'email chủ'}). Để gửi tới mọi email, hãy thêm domain trên resend.com.`);
+    }
+    throw new Error(data.message || 'Lỗi khi gửi email qua Resend API.');
+  }
+
+  console.log(`[Resend Success] Email sent: ${data.id}`);
+  return { success: true, messageId: data.id };
 };
 
 module.exports = {
