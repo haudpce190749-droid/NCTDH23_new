@@ -1,52 +1,45 @@
-const dns = require('dns');
+const dns = require('dns').promises;
 const nodemailer = require('nodemailer');
 require('dotenv').config();
-
-// Globally prefer IPv4
-if (dns.setDefaultResultOrder) {
-  dns.setDefaultResultOrder('ipv4first');
-}
 
 const EMAIL_USER = (process.env.EMAIL_USER || 'jobnexa.vn@gmail.com').trim();
 const EMAIL_PASS = (process.env.EMAIL_APP_PASSWORD || 'ispxgzujbwtkuyjo').replace(/\s+/g, '');
 const FROM_NAME = process.env.EMAIL_FROM_NAME || 'EduJob - Cổng Tuyển Dụng Sinh Viên';
 
-// Custom DNS lookup that strictly returns only IPv4 addresses
-const ipv4CustomLookup = (hostname, options, callback) => {
-  return dns.lookup(hostname, { family: 4 }, (err, address, family) => {
-    if (err) return callback(err);
-    callback(null, address, 4);
-  });
+/**
+ * Resolve IPv4 address directly for smtp.gmail.com
+ */
+const getGmailIPv4 = async () => {
+  try {
+    const addresses = await dns.resolve4('smtp.gmail.com');
+    if (addresses && addresses.length > 0) {
+      console.log('[DNS] Resolved smtp.gmail.com to IPv4:', addresses[0]);
+      return addresses[0];
+    }
+  } catch (err) {
+    console.warn('[DNS] resolve4 failed, using default IPv4 fallback:', err.message);
+  }
+  return '74.125.130.108'; // Reliable Google SMTP IPv4 fallback
 };
 
-// Create nodemailer transporter with strict IPv4 lookup and SSL
-const createTransporter = () => {
-  return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
+const sendOtpEmail = async (toEmail, otpCode, purpose = 'register') => {
+  const hostIp = await getGmailIPv4();
+
+  const transporter = nodemailer.createTransport({
+    host: hostIp, // Direct IPv4 IP address (Bypasses IPv6 ENETUNREACH completely)
     port: 465,
     secure: true, // SSL
-    lookup: ipv4CustomLookup, // Strict IPv4 lookup - prevents all ENETUNREACH IPv6 errors
     auth: {
       user: EMAIL_USER,
       pass: EMAIL_PASS,
     },
     tls: {
+      servername: 'smtp.gmail.com', // Ensures SSL certificate matches smtp.gmail.com
       rejectUnauthorized: false,
-      servername: 'smtp.gmail.com',
     },
     connectionTimeout: 15000,
     greetingTimeout: 15000,
   });
-};
-
-/**
- * Send OTP Verification Email
- * @param {string} toEmail 
- * @param {string} otpCode 
- * @param {string} purpose 
- */
-const sendOtpEmail = async (toEmail, otpCode, purpose = 'register') => {
-  const transporter = createTransporter();
 
   const title = purpose === 'register' ? 'Mã Xác Thực Đăng Ký Tài Khoản' : 'Mã Xác Thực Đặt Lại Mật Khẩu';
   const subtitle = purpose === 'register' 
