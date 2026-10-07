@@ -1,30 +1,26 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-let transporterInstance = null;
+const EMAIL_USER = (process.env.EMAIL_USER || 'jobnexa.vn@gmail.com').trim();
+const EMAIL_PASS = (process.env.EMAIL_APP_PASSWORD || 'ispxgzujbwtkuyjo').replace(/\s+/g, '');
+const FROM_NAME = process.env.EMAIL_FROM_NAME || 'EduJob - Cổng Tuyển Dụng Sinh Viên';
 
-const getTransporter = () => {
-  if (transporterInstance) return transporterInstance;
-
-  const user = (process.env.EMAIL_USER || '').trim();
-  const pass = (process.env.EMAIL_APP_PASSWORD || '').replace(/\s+/g, '');
-
-  if (!user || !pass || pass === 'your_16_digit_app_password_here') {
-    throw new Error('Chưa cấu hình tài khoản gửi Email (EMAIL_USER hoặc EMAIL_APP_PASSWORD trong file .env).');
-  }
-
-  transporterInstance = nodemailer.createTransport({
-    service: 'gmail',
-    pool: true,
-    maxConnections: 3,
-    maxMessages: 50,
+// Create nodemailer transporter with explicit Gmail host & SSL
+const createTransporter = () => {
+  return nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // SSL
     auth: {
-      user: user,
-      pass: pass,
+      user: EMAIL_USER,
+      pass: EMAIL_PASS,
     },
+    tls: {
+      rejectUnauthorized: false,
+    },
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
   });
-
-  return transporterInstance;
 };
 
 /**
@@ -34,9 +30,7 @@ const getTransporter = () => {
  * @param {string} purpose 
  */
 const sendOtpEmail = async (toEmail, otpCode, purpose = 'register') => {
-  const transporter = getTransporter();
-  const emailUser = process.env.EMAIL_USER || 'congtytuyendungdoanhnghiep@gmail.com';
-  const fromName = process.env.EMAIL_FROM_NAME || 'EduJob - Cổng Tuyển Dụng Sinh Viên';
+  const transporter = createTransporter();
 
   const title = purpose === 'register' ? 'Mã Xác Thực Đăng Ký Tài Khoản' : 'Mã Xác Thực Đặt Lại Mật Khẩu';
   const subtitle = purpose === 'register' 
@@ -64,7 +58,7 @@ const sendOtpEmail = async (toEmail, otpCode, purpose = 'register') => {
     <body>
       <div class="container">
         <div class="header">
-          <h1>${fromName}</h1>
+          <h1>${FROM_NAME}</h1>
           <p>${title}</p>
         </div>
         <div class="body">
@@ -82,7 +76,7 @@ const sendOtpEmail = async (toEmail, otpCode, purpose = 'register') => {
           </p>
         </div>
         <div class="footer">
-          <p>Email được gửi tự động từ <strong>${emailUser}</strong></p>
+          <p>Email được gửi tự động từ <strong>${EMAIL_USER}</strong></p>
           <p>© 2026 EduJob Marketplace. All rights reserved.</p>
         </div>
       </div>
@@ -91,9 +85,9 @@ const sendOtpEmail = async (toEmail, otpCode, purpose = 'register') => {
   `;
 
   const mailOptions = {
-    from: `"${fromName}" <${emailUser}>`,
+    from: `"${FROM_NAME}" <${EMAIL_USER}>`,
     to: toEmail,
-    subject: `[${otpCode}] ${title} - ${fromName}`,
+    subject: `[${otpCode}] ${title} - ${FROM_NAME}`,
     html: htmlContent,
   };
 
