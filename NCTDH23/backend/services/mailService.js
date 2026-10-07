@@ -1,16 +1,23 @@
+const dns = require('dns');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
+
+// Force Node.js DNS to prioritize IPv4 to prevent ENETUNREACH on Cloud (Render, Heroku, etc.)
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder('ipv4first');
+}
 
 const EMAIL_USER = (process.env.EMAIL_USER || 'jobnexa.vn@gmail.com').trim();
 const EMAIL_PASS = (process.env.EMAIL_APP_PASSWORD || 'ispxgzujbwtkuyjo').replace(/\s+/g, '');
 const FROM_NAME = process.env.EMAIL_FROM_NAME || 'EduJob - Cổng Tuyển Dụng Sinh Viên';
 
-// Create nodemailer transporter with explicit Gmail host & SSL
+// Create nodemailer transporter with explicit IPv4 family and SSL
 const createTransporter = () => {
   return nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 465,
     secure: true, // SSL
+    family: 4, // Force IPv4 (Prevents ENETUNREACH error on Cloud)
     auth: {
       user: EMAIL_USER,
       pass: EMAIL_PASS,
