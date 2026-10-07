@@ -17,7 +17,7 @@ router.post('/send-otp', async (req, res) => {
 
     const cleanEmail = email.trim().toLowerCase();
 
-    // If registering, check if email is already registered
+    // If registering, check duplicate email
     if (purpose === 'register') {
       const existing = await db.asyncGet('SELECT id FROM users WHERE email = ?', [cleanEmail]);
       if (existing) {
@@ -30,7 +30,7 @@ router.post('/send-otp', async (req, res) => {
       }
     }
 
-    // Check rate limit: cooldown 30 seconds for same email
+    // Rate limit cooldown 30 seconds
     const recentOtp = await db.asyncGet(
       `SELECT id, created_at FROM email_otps 
        WHERE email = ? AND purpose = ? 
@@ -51,8 +51,6 @@ router.post('/send-otp', async (req, res) => {
 
     // Generate random 6-digit OTP
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-    
-    // Expires in 5 minutes (in SQLite format YYYY-MM-DD HH:MM:SS)
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString().replace('T', ' ').slice(0, 19);
 
     // Save OTP into database
@@ -61,13 +59,12 @@ router.post('/send-otp', async (req, res) => {
       [cleanEmail, otpCode, purpose, expiresAt]
     );
 
-    // Send email via mailService
-    const mailResult = await sendOtpEmail(cleanEmail, otpCode, purpose);
+    // Send real email via mailService
+    await sendOtpEmail(cleanEmail, otpCode, purpose);
 
     res.json({
-      message: `Mã xác thực OTP đã được gửi đến email ${cleanEmail}. Vui lòng kiểm tra hộp thư (cả mục Spam/Rác).`,
+      message: `Mã xác thực OTP đã được gửi đến email ${cleanEmail}. Vui lòng kiểm tra hộp thư đến (hoặc mục Thư rác/Spam).`,
       expiresInMinutes: 5,
-      devOtp: mailResult.devOtp || undefined,
     });
   } catch (err) {
     console.error('Lỗi khi gửi mã OTP:', err);
@@ -168,7 +165,7 @@ router.post('/verify-otp-register', async (req, res) => {
   }
 });
 
-// 3. Fallback direct register (for backward compatibility)
+// 3. Fallback direct register
 router.post('/register', async (req, res) => {
   try {
     const { email, password, role, fullName, companyName } = req.body;
@@ -183,7 +180,6 @@ router.post('/register', async (req, res) => {
 
     const cleanEmail = email.trim().toLowerCase();
 
-    // Check existing email
     const existing = await db.asyncGet('SELECT id FROM users WHERE email = ?', [cleanEmail]);
     if (existing) {
       return res.status(400).json({ error: 'Email này đã được sử dụng trong hệ thống.' });
@@ -296,42 +292,6 @@ router.get('/me', authenticateToken, async (req, res) => {
   } catch (err) {
     console.error('Lỗi lấy thông tin cá nhân:', err);
     res.status(500).json({ error: 'Lỗi máy chủ khi tải thông tin tài khoản.' });
-  }
-});
-
-// 6. Change Password
-router.post('/change-password', authenticateToken, async (req, res) => {
-  try {
-    const { currentPassword, newPassword } = req.body;
-
-    if (!currentPassword || !newPassword) {
-      return res.status(400).json({ error: 'Vui lòng cung cấp mật khẩu hiện tại và mật khẩu mới.' });
-    }
-
-    if (newPassword.length < 6) {
-      return res.status(400).json({ error: 'Mật khẩu mới phải có tối thiểu 6 ký tự.' });
-    }
-
-    const user = await db.asyncGet('SELECT * FROM users WHERE id = ?', [req.user.id]);
-    if (!user) {
-      return res.status(404).json({ error: 'Người dùng không tồn tại.' });
-    }
-
-    const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
-    if (!isMatch) {
-      return res.status(400).json({ error: 'Mật khẩu hiện tại không đúng.' });
-    }
-
-    const newHash = await bcrypt.hash(newPassword, 10);
-    await db.asyncRun('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [
-      newHash,
-      req.user.id
-    ]);
-
-    res.json({ message: 'Đổi mật khẩu thành công!' });
-  } catch (err) {
-    console.error('Lỗi đổi mật khẩu:', err);
-    res.status(500).json({ error: 'Lỗi máy chủ khi đổi mật khẩu.' });
   }
 });
 

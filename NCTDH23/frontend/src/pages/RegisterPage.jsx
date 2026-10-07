@@ -20,7 +20,6 @@ const RegisterPage = () => {
   // OTP State
   const [otp, setOtp] = useState('');
   const [resendCountdown, setResendCountdown] = useState(0);
-  const [devOtpHint, setDevOtpHint] = useState('');
 
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -58,10 +57,7 @@ const RegisterPage = () => {
       const res = await sendOtp(email.trim().toLowerCase(), 'register');
       setStep(2);
       setResendCountdown(60);
-      setInfoMsg(res.message || 'Mã OTP đã được gửi đến email của bạn.');
-      if (res.devOtp) {
-        setDevOtpHint(res.devOtp);
-      }
+      setInfoMsg(res.message || 'Mã xác thực OTP đã được gửi đến email của bạn.');
     } catch (err) {
       console.error('Send OTP Error:', err);
       const msg =
@@ -85,9 +81,6 @@ const RegisterPage = () => {
       const res = await sendOtp(email.trim().toLowerCase(), 'register');
       setResendCountdown(60);
       setInfoMsg('Đã gửi lại mã OTP mới vào hòm thư của bạn.');
-      if (res.devOtp) {
-        setDevOtpHint(res.devOtp);
-      }
     } catch (err) {
       const msg = err.response?.data?.error || 'Không thể gửi lại mã OTP. Vui lòng thử lại sau.';
       setErrorMsg(msg);
@@ -148,7 +141,7 @@ const RegisterPage = () => {
           <p className="text-xs text-gray-500">
             {step === 1 
               ? 'Tham gia hệ thống tuyển dụng việc làm sinh viên EduJob' 
-              : 'Nhập mã 6 số gửi từ congtytuyendungdoanhnghiep@gmail.com'
+              : 'Kiểm tra hộp thư để lấy mã xác thực 6 số bảo mật'
             }
           </p>
         </div>
@@ -180,13 +173,6 @@ const RegisterPage = () => {
         {infoMsg && (
           <div className="p-3.5 bg-sky-50 border border-sky-200 text-sky-800 text-xs rounded-xl font-medium leading-relaxed">
             {infoMsg}
-          </div>
-        )}
-
-        {/* Development Mode OTP Notice */}
-        {devOtpHint && (
-          <div className="p-3 bg-amber-50 border border-amber-300 text-amber-900 text-xs rounded-xl">
-            ⚡ <strong>Chế độ phát triển:</strong> Mã OTP của bạn là: <span className="font-mono font-bold text-sm bg-white px-2 py-0.5 rounded border border-amber-400">{devOtpHint}</span>
           </div>
         )}
 

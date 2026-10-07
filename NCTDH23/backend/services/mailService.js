@@ -1,19 +1,19 @@
 const nodemailer = require('nodemailer');
+require('dotenv').config();
 
-const EMAIL_USER = process.env.EMAIL_USER || 'congtytuyendungdoanhnghiep@gmail.com';
-const EMAIL_PASS = process.env.EMAIL_APP_PASSWORD || '';
-const FROM_NAME = process.env.EMAIL_FROM_NAME || 'EduJob - Cổng Tuyển Dụng Sinh Viên';
+const getTransporter = () => {
+  const user = (process.env.EMAIL_USER || '').trim();
+  const pass = (process.env.EMAIL_APP_PASSWORD || '').replace(/\s+/g, '');
 
-// Create nodemailer transporter
-const createTransporter = () => {
-  if (!EMAIL_PASS || EMAIL_PASS === 'your_16_digit_app_password_here') {
-    return null;
+  if (!user || !pass || pass === 'your_16_digit_app_password_here') {
+    throw new Error('Chưa cấu hình tài khoản gửi Email (EMAIL_USER hoặc EMAIL_APP_PASSWORD).');
   }
+
   return nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: EMAIL_USER,
-      pass: EMAIL_PASS.replace(/\s+/g, ''), // remove spaces from 16-char app password
+      user: user,
+      pass: pass,
     },
   });
 };
@@ -25,7 +25,9 @@ const createTransporter = () => {
  * @param {string} purpose 
  */
 const sendOtpEmail = async (toEmail, otpCode, purpose = 'register') => {
-  const transporter = createTransporter();
+  const transporter = getTransporter();
+  const emailUser = process.env.EMAIL_USER || 'jobnexa.vn@gmail.com';
+  const fromName = process.env.EMAIL_FROM_NAME || 'EduJob - Cổng Tuyển Dụng Sinh Viên';
 
   const title = purpose === 'register' ? 'Mã Xác Thực Đăng Ký Tài Khoản' : 'Mã Xác Thực Đặt Lại Mật Khẩu';
   const subtitle = purpose === 'register' 
@@ -48,19 +50,18 @@ const sendOtpEmail = async (toEmail, otpCode, purpose = 'register') => {
         .otp-code { font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #0284c7; margin: 0; font-family: 'Courier New', Courier, monospace; }
         .otp-note { font-size: 12px; color: #64748b; margin-top: 8px; }
         .footer { background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px; text-align: center; font-size: 12px; color: #94a3b8; }
-        .footer a { color: #0284c7; text-decoration: none; }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
-          <h1>${FROM_NAME}</h1>
+          <h1>${fromName}</h1>
           <p>${title}</p>
         </div>
         <div class="body">
           <p>Xin chào <strong>${toEmail}</strong>,</p>
           <p>${subtitle}</p>
-          <p>Vui lòng sử dụng mã xác thực OTP bên dưới để tiếp tục quy trình:</p>
+          <p>Vui lòng sử dụng mã xác thực OTP bảo mật bên dưới để tiếp tục:</p>
           
           <div class="otp-box">
             <div class="otp-code">${otpCode}</div>
@@ -68,11 +69,11 @@ const sendOtpEmail = async (toEmail, otpCode, purpose = 'register') => {
           </div>
 
           <p style="font-size: 13px; color: #64748b;">
-            ⚠️ <em>Lưu ý: Không chia sẻ mã OTP này cho bất kỳ ai để đảm bảo an toàn cho tài khoản của bạn. Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email.</em>
+            ⚠️ <em>Tuyệt đối không chia sẻ mã OTP này cho bất kỳ ai để bảo vệ tài khoản của bạn. Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email.</em>
           </p>
         </div>
         <div class="footer">
-          <p>Email được gửi tự động từ <strong>${EMAIL_USER}</strong></p>
+          <p>Email được gửi tự động từ <strong>${emailUser}</strong></p>
           <p>© 2026 EduJob Marketplace. All rights reserved.</p>
         </div>
       </div>
@@ -80,38 +81,16 @@ const sendOtpEmail = async (toEmail, otpCode, purpose = 'register') => {
     </html>
   `;
 
-  if (!transporter) {
-    console.log('====================================================');
-    console.log(' [DEV MODE EMAIL NOTIFICATION]');
-    console.log(` TO: ${toEmail}`);
-    console.log(` OTP CODE: ${otpCode}`);
-    console.log(` PURPOSE: ${purpose}`);
-    console.log(' [CHÚ Ý] Chưa cấu hình EMAIL_APP_PASSWORD trong backend/.env');
-    console.log(' Hãy điền 16 ký tự mật khẩu ứng dụng Gmail để gửi mail thật.');
-    console.log('====================================================');
-    return {
-      success: true,
-      mode: 'dev_simulated',
-      message: 'Mã OTP đã được tạo (Chế độ phát triển).',
-      devOtp: otpCode
-    };
-  }
-
   const mailOptions = {
-    from: `"${FROM_NAME}" <${EMAIL_USER}>`,
+    from: `"${fromName}" <${emailUser}>`,
     to: toEmail,
-    subject: `[${otpCode}] ${title} - ${FROM_NAME}`,
+    subject: `[${otpCode}] ${title} - ${fromName}`,
     html: htmlContent,
   };
 
-  try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`[Email Sent] Đã gửi mã OTP ${otpCode} tới ${toEmail}: ${info.messageId}`);
-    return { success: true, messageId: info.messageId };
-  } catch (err) {
-    console.error('[Email Error] Lỗi khi gửi mail qua Nodemailer:', err);
-    throw new Error('Không thể gửi email xác thực. Vui lòng kiểm tra lại cấu hình Gmail.');
-  }
+  const info = await transporter.sendMail(mailOptions);
+  console.log(`[Email Sent] Đã gửi mã OTP ${otpCode} tới ${toEmail}: ${info.messageId}`);
+  return { success: true, messageId: info.messageId };
 };
 
 module.exports = {
