@@ -1,22 +1,15 @@
 require('dotenv').config();
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY || (process.env.RESEND_KEY_PART1 ? process.env.RESEND_KEY_PART1 + process.env.RESEND_KEY_PART2 : '');
-const FROM_EMAIL = process.env.RESEND_FROM || 'EduJob <onboarding@resend.dev>';
+const GOOGLE_WEBHOOK_URL = process.env.GOOGLE_MAIL_WEBHOOK_URL || 'https://script.google.com/macros/s/AKfycbzaA6WkFLYDSOlAfWCQRSpIa35N9L7ElMLXw8r97vxNJl52fiDZ3_WEIv3gqm5U7yNi/exec';
 const FROM_NAME = process.env.EMAIL_FROM_NAME || 'EduJob - Cổng Tuyển Dụng Sinh Viên';
 
 /**
- * Send OTP Verification Email via Resend REST API (HTTPS Port 443)
+ * Send OTP Verification Email via Google Apps Script HTTPS Webhook (100% Free & No Domain Required)
  * @param {string} toEmail 
  * @param {string} otpCode 
  * @param {string} purpose 
  */
 const sendOtpEmail = async (toEmail, otpCode, purpose = 'register') => {
-  const apiKey = RESEND_API_KEY || process.env.RESEND_API_KEY;
-
-  if (!apiKey) {
-    throw new Error('Chưa cấu hình RESEND_API_KEY trong biến môi trường hoặc file .env.');
-  }
-
   const title = purpose === 'register' ? 'Mã Xác Thực Đăng Ký Tài Khoản' : 'Mã Xác Thực Đặt Lại Mật Khẩu';
   const subtitle = purpose === 'register' 
     ? 'Cảm ơn bạn đã đăng ký tài khoản tại nền tảng Tuyển Dụng Sinh Viên EduJob.' 
@@ -61,7 +54,7 @@ const sendOtpEmail = async (toEmail, otpCode, purpose = 'register') => {
           </p>
         </div>
         <div class="footer">
-          <p>Email được gửi tự động qua hệ thống bảo mật <strong>EduJob</strong></p>
+          <p>Email được gửi tự động qua hệ thống tuyển dụng <strong>${FROM_NAME}</strong></p>
           <p>© 2026 EduJob Marketplace. All rights reserved.</p>
         </div>
       </div>
@@ -69,34 +62,36 @@ const sendOtpEmail = async (toEmail, otpCode, purpose = 'register') => {
     </html>
   `;
 
-  console.log(`[Resend HTTPS] Sending OTP ${otpCode} to ${toEmail}...`);
+  console.log(`[Google Webhook HTTPS] Sending OTP ${otpCode} to ${toEmail}...`);
 
-  const response = await fetch('https://api.resend.com/emails', {
+  const response = await fetch(GOOGLE_WEBHOOK_URL, {
     method: 'POST',
+    redirect: 'follow',
     headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
+      'Content-Type': 'text/plain;charset=utf-8',
     },
     body: JSON.stringify({
-      from: FROM_EMAIL,
-      to: [toEmail],
+      to: toEmail,
       subject: `[${otpCode}] ${title} - ${FROM_NAME}`,
       html: htmlContent,
     }),
   });
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    console.error('[Resend Error]', response.status, data);
-    if (data.message?.includes('only send testing emails')) {
-      throw new Error(`Tài khoản Resend thử nghiệm chỉ cho phép gửi đến email đăng ký của bạn (${data.message.match(/\((.*?)\)/)?.[1] || 'email chủ'}). Để gửi tới mọi email, hãy thêm domain trên resend.com.`);
-    }
-    throw new Error(data.message || 'Lỗi khi gửi email qua Resend API.');
+  const rawText = await response.text();
+  let data;
+  try {
+    data = JSON.parse(rawText);
+  } catch (parseErr) {
+    data = { success: response.ok };
   }
 
-  console.log(`[Resend Success] Email sent: ${data.id}`);
-  return { success: true, messageId: data.id };
+  if (!response.ok || (data && data.success === false)) {
+    console.error('[Google Webhook Error]', response.status, data);
+    throw new Error(data.error || 'Lỗi khi gửi email qua Google Webhook.');
+  }
+
+  console.log(`[Google Webhook Success] Email sent successfully to ${toEmail}`);
+  return { success: true };
 };
 
 module.exports = {
