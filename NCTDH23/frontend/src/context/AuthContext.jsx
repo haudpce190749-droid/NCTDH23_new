@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
     setToast({ message, type });
     setTimeout(() => {
       setToast(null);
-    }, 4000);
+    }, 4500);
   };
 
   const fetchCurrentUser = async () => {
@@ -47,6 +47,19 @@ export const AuthProvider = ({ children }) => {
     return res.data.user;
   };
 
+  const sendOtp = async (email, purpose = 'register') => {
+    const res = await api.post('/auth/send-otp', { email, purpose });
+    return res.data;
+  };
+
+  const registerWithOtp = async (payload) => {
+    const res = await api.post('/auth/verify-otp-register', payload);
+    localStorage.setItem('token', res.data.token);
+    setUser(res.data.user);
+    showToast('Xác thực email và tạo tài khoản thành công!', 'success');
+    return res.data.user;
+  };
+
   const register = async (payload) => {
     const res = await api.post('/auth/register', payload);
     localStorage.setItem('token', res.data.token);
@@ -66,7 +79,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser, toast, showToast }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      loading, 
+      login, 
+      sendOtp, 
+      registerWithOtp, 
+      register, 
+      logout, 
+      refreshUser, 
+      toast, 
+      showToast 
+    }}>
       {children}
     </AuthContext.Provider>
   );

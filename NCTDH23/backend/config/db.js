@@ -235,6 +235,20 @@ db.initSchema = async function () {
       )
     `);
 
+    
+    // Email OTPs table for verification
+    await this.asyncRun(`
+      CREATE TABLE IF NOT EXISTS email_otps (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT NOT NULL,
+        otp_code TEXT NOT NULL,
+        purpose TEXT NOT NULL DEFAULT 'register',
+        expires_at DATETIME NOT NULL,
+        is_verified INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+  
     console.log('Khởi tạo Schema CSDL hoàn tất.');
   } catch (err) {
     console.error('Lỗi tạo Schema CSDL:', err);
