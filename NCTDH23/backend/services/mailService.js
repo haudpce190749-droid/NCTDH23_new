@@ -13,32 +13,32 @@ const getGmailIPv4 = async () => {
   try {
     const addresses = await dns.resolve4('smtp.gmail.com');
     if (addresses && addresses.length > 0) {
-      console.log('[DNS] Resolved smtp.gmail.com to IPv4:', addresses[0]);
       return addresses[0];
     }
   } catch (err) {
     console.warn('[DNS] resolve4 failed, using default IPv4 fallback:', err.message);
   }
-  return '74.125.130.108'; // Reliable Google SMTP IPv4 fallback
+  return '74.125.130.108'; // Reliable Google SMTP IPv4
 };
 
 const sendOtpEmail = async (toEmail, otpCode, purpose = 'register') => {
   const hostIp = await getGmailIPv4();
 
   const transporter = nodemailer.createTransport({
-    host: hostIp, // Direct IPv4 IP address (Bypasses IPv6 ENETUNREACH completely)
+    host: hostIp,
     port: 465,
-    secure: true, // SSL
+    secure: true,
     auth: {
       user: EMAIL_USER,
       pass: EMAIL_PASS,
     },
     tls: {
-      servername: 'smtp.gmail.com', // Ensures SSL certificate matches smtp.gmail.com
+      servername: 'smtp.gmail.com',
       rejectUnauthorized: false,
     },
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
+    connectionTimeout: 60000, // 60s
+    greetingTimeout: 60000,   // 60s
+    socketTimeout: 60000,     // 60s
   });
 
   const title = purpose === 'register' ? 'Mã Xác Thực Đăng Ký Tài Khoản' : 'Mã Xác Thực Đặt Lại Mật Khẩu';

@@ -7,7 +7,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 60000, // 60s
+  timeout: 300000, // 5 minutes (300s) - no premature connection abort
 });
 
 // Attach JWT token to requests
@@ -24,9 +24,9 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
-      error.userFriendlyMessage = 'Máy chủ đang xử lý. Nếu mã OTP đã tới email, bạn có thể nhập mã ngay!';
+      error.userFriendlyMessage = 'Máy chủ đang phản hồi hơi lâu. Nếu bạn đã nhận được mã trong email, bạn có thể chuyển qua bước nhập mã ngay!';
     } else if (!error.response) {
-      error.userFriendlyMessage = 'Không thể kết nối đến máy chủ Cloud. Vui lòng kiểm tra kết nối mạng!';
+      error.userFriendlyMessage = 'Không thể kết nối đến máy chủ Cloud. Vui lòng kiểm tra lại kết nối mạng!';
     }
     return Promise.reject(error);
   }
