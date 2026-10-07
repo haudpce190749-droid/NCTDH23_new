@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { GraduationCap, Mail, Lock, LogIn, ArrowRight, UserCheck, Building2 } from 'lucide-react';
+import { Mail, Lock, LogIn } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const LoginPage = () => {
-  const { login, showToast } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
@@ -27,16 +27,13 @@ const LoginPage = () => {
         navigate('/');
       }
     } catch (err) {
-      setErrorMsg(err.response?.data?.error || 'Đăng nhập không thành công. Vui lòng kiểm tra lại email và mật khẩu.');
+      setErrorMsg(
+        err.response?.data?.error ||
+        'Đăng nhập không thành công. Vui lòng kiểm tra lại email và mật khẩu hoặc kiểm tra kết nối mạng.'
+      );
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const fillDemoAccount = (demoEmail, demoPass) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
-    setErrorMsg('');
   };
 
   return (
@@ -53,27 +50,6 @@ const LoginPage = () => {
             {errorMsg}
           </div>
         )}
-
-        {/* Demo Quick Fill Buttons */}
-        <div className="bg-sky-50/60 p-3.5 rounded-2xl border border-sky-100 space-y-2">
-          <span className="text-[11px] font-bold text-sky-800 block uppercase tracking-wider">Tài khoản thử nghiệm (Demo):</span>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => fillDemoAccount('student@example.com', 'student123')}
-              className="flex-1 py-1.5 px-2 bg-white hover:bg-sky-100 text-sky-800 text-xs font-semibold rounded-lg border border-sky-200 shadow-2xs flex items-center justify-center gap-1"
-            >
-              <UserCheck className="w-3.5 h-3.5" /> Demo Sinh Viên
-            </button>
-            <button
-              type="button"
-              onClick={() => fillDemoAccount('company@example.com', 'company123')}
-              className="flex-1 py-1.5 px-2 bg-white hover:bg-purple-100 text-purple-800 text-xs font-semibold rounded-lg border border-purple-200 shadow-2xs flex items-center justify-center gap-1"
-            >
-              <Building2 className="w-3.5 h-3.5" /> Demo Công Ty
-            </button>
-          </div>
-        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
