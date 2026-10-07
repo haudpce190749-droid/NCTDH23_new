@@ -1,18 +1,18 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Building2, Mail, Lock, UserPlus } from 'lucide-react';
+import { User, Building2, Mail, Lock, UserPlus, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const RegisterPage = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const [role, setRole] = useState('student');
-  const [fullName, setFullName] = useState('');
-  const [companyName, setCompanyName] = useState('');
+  const [role, setRole] = useState('student'); // 'student' or 'company'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [companyName, setCompanyName] = useState('');
 
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -22,22 +22,12 @@ const RegisterPage = () => {
     setErrorMsg('');
 
     if (password !== confirmPassword) {
-      setErrorMsg('Mật khẩu nhập lại không trùng khớp.');
+      setErrorMsg('Mật khẩu xác nhận không khớp.');
       return;
     }
 
     if (password.length < 6) {
       setErrorMsg('Mật khẩu phải có tối thiểu 6 ký tự.');
-      return;
-    }
-
-    if (role === 'student' && !fullName.trim()) {
-      setErrorMsg('Vui lòng nhập Họ và Tên của bạn.');
-      return;
-    }
-
-    if (role === 'company' && !companyName.trim()) {
-      setErrorMsg('Vui lòng nhập Tên Công Ty / Doanh Nghiệp.');
       return;
     }
 
@@ -58,10 +48,12 @@ const RegisterPage = () => {
         navigate('/company/dashboard');
       }
     } catch (err) {
-      setErrorMsg(
+      console.error('Register error:', err);
+      const msg =
         err.response?.data?.error ||
-        'Đăng ký thất bại. Vui lòng kiểm tra lại thông tin hoặc kiểm tra kết nối mạng.'
-      );
+        err.userFriendlyMessage ||
+        'Đăng ký thất bại. Vui lòng kiểm tra lại thông tin hoặc kết nối máy chủ.';
+      setErrorMsg(msg);
     } finally {
       setSubmitting(false);
     }
@@ -81,7 +73,7 @@ const RegisterPage = () => {
           <button
             type="button"
             onClick={() => setRole('student')}
-            className={`flex-1 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
+            className={`flex-1 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
               role === 'student' ? 'bg-white text-sky-700 shadow-xs' : 'text-gray-500 hover:text-gray-800'
             }`}
           >
@@ -90,7 +82,7 @@ const RegisterPage = () => {
           <button
             type="button"
             onClick={() => setRole('company')}
-            className={`flex-1 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
+            className={`flex-1 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
               role === 'company' ? 'bg-white text-purple-700 shadow-xs' : 'text-gray-500 hover:text-gray-800'
             }`}
           >
@@ -99,7 +91,7 @@ const RegisterPage = () => {
         </div>
 
         {errorMsg && (
-          <div className="p-3.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl font-medium">
+          <div className="p-3.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl font-medium leading-relaxed">
             {errorMsg}
           </div>
         )}
@@ -195,14 +187,23 @@ const RegisterPage = () => {
           <button
             type="submit"
             disabled={submitting}
-            className={`w-full py-3.5 text-white font-bold text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 ${
+            className={`w-full py-3.5 text-white font-bold text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer ${
               role === 'student'
                 ? 'bg-sky-600 hover:bg-sky-700 shadow-sky-100'
                 : 'bg-purple-600 hover:bg-purple-700 shadow-purple-100'
             }`}
           >
-            <UserPlus className="w-4 h-4" />
-            {submitting ? 'Đang khởi tạo tài khoản...' : `Hoàn Tất Đăng Ký (${role === 'student' ? 'Sinh Viên' : 'Công Ty'})`}
+            {submitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Đang xử lý đăng ký...</span>
+              </>
+            ) : (
+              <>
+                <UserPlus className="w-4 h-4" />
+                <span>Hoàn Tất Đăng Ký (${role === 'student' ? 'Sinh Viên' : 'Công Ty'})</span>
+              </>
+            )}
           </button>
         </form>
 

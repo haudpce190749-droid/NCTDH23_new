@@ -1,6 +1,6 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, LogIn } from 'lucide-react';
+import { Mail, Lock, LogIn, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const LoginPage = () => {
@@ -18,7 +18,7 @@ const LoginPage = () => {
     setSubmitting(true);
 
     try {
-      const loggedUser = await login(email, password);
+      const loggedUser = await login(email.trim().toLowerCase(), password);
       if (loggedUser.role === 'student') {
         navigate('/student/dashboard');
       } else if (loggedUser.role === 'company') {
@@ -27,10 +27,12 @@ const LoginPage = () => {
         navigate('/');
       }
     } catch (err) {
-      setErrorMsg(
+      console.error('Login error:', err);
+      const msg =
         err.response?.data?.error ||
-        'Đăng nhập không thành công. Vui lòng kiểm tra lại email và mật khẩu hoặc kiểm tra kết nối mạng.'
-      );
+        err.userFriendlyMessage ||
+        'Đăng nhập không thành công. Vui lòng kiểm tra lại email, mật khẩu hoặc kết nối máy chủ.';
+      setErrorMsg(msg);
     } finally {
       setSubmitting(false);
     }
@@ -46,7 +48,7 @@ const LoginPage = () => {
         </div>
 
         {errorMsg && (
-          <div className="p-3.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl font-medium">
+          <div className="p-3.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl font-medium leading-relaxed">
             {errorMsg}
           </div>
         )}
@@ -94,10 +96,19 @@ const LoginPage = () => {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-3.5 bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-sky-100 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full py-3.5 bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-sky-100 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
           >
-            <LogIn className="w-4 h-4" />
-            {submitting ? 'Đang xác thực...' : 'Đăng Nhập'}
+            {submitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Đang xử lý đăng nhập...</span>
+              </>
+            ) : (
+              <>
+                <LogIn className="w-4 h-4" />
+                <span>Đăng Nhập</span>
+              </>
+            )}
           </button>
         </form>
 
