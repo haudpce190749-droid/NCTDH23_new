@@ -2,7 +2,7 @@ const dns = require('dns');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-// Force Node.js DNS to prioritize IPv4 to prevent ENETUNREACH on Cloud (Render, Heroku, etc.)
+// Globally prefer IPv4
 if (dns.setDefaultResultOrder) {
   dns.setDefaultResultOrder('ipv4first');
 }
@@ -11,19 +11,28 @@ const EMAIL_USER = (process.env.EMAIL_USER || 'jobnexa.vn@gmail.com').trim();
 const EMAIL_PASS = (process.env.EMAIL_APP_PASSWORD || 'ispxgzujbwtkuyjo').replace(/\s+/g, '');
 const FROM_NAME = process.env.EMAIL_FROM_NAME || 'EduJob - Cổng Tuyển Dụng Sinh Viên';
 
-// Create nodemailer transporter with explicit IPv4 family and SSL
+// Custom DNS lookup that strictly returns only IPv4 addresses
+const ipv4CustomLookup = (hostname, options, callback) => {
+  return dns.lookup(hostname, { family: 4 }, (err, address, family) => {
+    if (err) return callback(err);
+    callback(null, address, 4);
+  });
+};
+
+// Create nodemailer transporter with strict IPv4 lookup and SSL
 const createTransporter = () => {
   return nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 465,
     secure: true, // SSL
-    family: 4, // Force IPv4 (Prevents ENETUNREACH error on Cloud)
+    lookup: ipv4CustomLookup, // Strict IPv4 lookup - prevents all ENETUNREACH IPv6 errors
     auth: {
       user: EMAIL_USER,
       pass: EMAIL_PASS,
     },
     tls: {
       rejectUnauthorized: false,
+      servername: 'smtp.gmail.com',
     },
     connectionTimeout: 15000,
     greetingTimeout: 15000,
