@@ -175,7 +175,7 @@ const CompanyProfilePage = () => {
             <label className="block font-bold text-gray-700 uppercase mb-1">Trụ Sở / Địa Chỉ</label>
             <input
               type="text"
-              placeholder="VD: Tòa nhà FPT Campus, Cầu Giấy, Hà Nội"
+              placeholder="VD: An Bình, Ninh Kiều, Cần Thơ"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl font-medium"

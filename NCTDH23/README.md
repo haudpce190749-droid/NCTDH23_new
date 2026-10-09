@@ -4,7 +4,7 @@
 ![Tech Stack](https://img.shields.io/badge/Tech-Node.js%20%7C%20Express%20%7C%20React%20%7C%20SQLite%20%7C%20Tailwind-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-EduJob là nền tảng tuyển dụng và kết nối việc làm số 1 dành riêng cho sinh viên và cựu sinh viên các trường đại học tại Việt Nam. Hệ thống kết nối ứng viên trẻ với các tập đoàn công nghệ, doanh nghiệp lớn (FPT Software, VNG, Viettel Digital, Shopee, MoMo...) với giao diện hiện đại, trực quan, hỗ trợ quy trình nộp ứng tuyển 1-click và quản lý hồ sơ theo thời gian thực.
+EduJob là nền tảng tuyển dụng và kết nối việc làm số 1 dành riêng cho sinh viên và cựu sinh viên các trường đại học tại Việt Nam. Hệ thống kết nối ứng viên trẻ với các tập đoàn công nghệ, doanh nghiệp lớn (VNPT Technology, VNG, Viettel Digital, Shopee, MoMo...) với giao diện hiện đại, trực quan, hỗ trợ quy trình nộp ứng tuyển 1-click và quản lý hồ sơ theo thời gian thực.
 
 ---
 
@@ -59,7 +59,7 @@ Hệ thống được tự động nạp dữ liệu mẫu (Seed Data) gồm 5+ 
 | :--- | :--- | :--- | :--- |
 | **Sinh Viên** | `student@example.com` | `student123` | Tìm việc, Nộp CV, Đánh dấu lưu việc làm, Quản lý hồ sơ |
 | **Sinh Viên 2** | `nguyenvana@example.com` | `student123` | Tìm việc, Nộp CV thiết kế UI/UX |
-| **Doanh Nghiệp (FPT)** | `company@example.com` | `company123` | Đăng tin, Sửa/Xóa tin, Quản lý ứng viên nộp hồ sơ |
+| **Doanh Nghiệp (VNPT)** | `company@example.com` | `company123` | Đăng tin, Sửa/Xóa tin, Quản lý ứng viên nộp hồ sơ |
 | **Doanh Nghiệp (VNG)** | `hr@vng.com.vn` | `company123` | Quản lý tin tuyển dụng VNG Campus |
 | **Quản trị viên** | `admin@example.com` | `admin123` | Quản trị hệ thống |
 

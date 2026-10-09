@@ -3,13 +3,25 @@ const db = require('./db');
 
 const seedData = async () => {
   await db.initPromise;
-  console.log('Đang khởi tạo dữ liệu mẫu...');
+  console.log('Đang kiểm tra và khởi tạo dữ liệu...');
 
   try {
+    // Luôn dọn dẹp các bài tuyển dụng và doanh nghiệp liên quan đến FPT nếu có trong CSDL
+    await db.asyncRun(`
+      DELETE FROM jobs 
+      WHERE company_id IN (SELECT id FROM company_profiles WHERE company_name LIKE '%FPT%')
+         OR title LIKE '%FPT%' 
+         OR description LIKE '%FPT%' 
+         OR benefits LIKE '%FPT%'
+    `);
+    await db.asyncRun(`
+      DELETE FROM company_profiles WHERE company_name LIKE '%FPT%'
+    `);
+
     // Check if data already exists
     const existingUsers = await db.asyncGet('SELECT COUNT(*) as count FROM users');
     if (existingUsers && existingUsers.count > 0) {
-      console.log('CSDL đã có dữ liệu mẫu. Bỏ qua bước seed.');
+      console.log('CSDL đã có dữ liệu mẫu. Bỏ qua bước seed ban đầu.');
       return;
     }
 
@@ -156,13 +168,13 @@ const seedData = async () => {
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         comp1UserId,
-        'FPT Software',
-        'FPT Software là công ty xuất khẩu dịch vụ phần mềm lớn nhất Việt Nam với hơn 30,000 nhân viên tại hơn 30 quốc gia trên toàn thế giới.',
-        'Công nghệ thông tin / Phần mềm',
+        'VNPT Technology',
+        'VNPT Technology là doanh nghiệp công nghệ cao hàng đầu, tiên phong trong nghiên cứu phát triển phần mềm, giải pháp IoT và hạ tầng chuyển đổi số.',
+        'Công nghệ thông tin / Viễn thông',
         '1000+ nhân viên',
-        'Hà Nội / TP.HCM / Đà Nẵng',
-        'https://fpt-software.com',
-        'recruitment@fpt-software.com',
+        'Hà Nội / TP.HCM / Cần Thơ',
+        'https://vnpt-technology.vn',
+        'recruitment@vnpt.vn',
         '024 7300 7300'
       ]
     );
@@ -249,7 +261,7 @@ const seedData = async () => {
         salary_min: 4000000,
         salary_max: 7000000,
         salary_negotiable: 0,
-        description: 'Chúng tôi đang tìm kiếm các bạn sinh viên năm 3, 4 hoặc mới tốt nghiệp có nền tảng JavaScript/ReactJS tốt tham gia chương trình Fresher/Internship tại FPT Software.',
+        description: 'Chúng tôi đang tìm kiếm các bạn sinh viên năm 3, 4 hoặc mới tốt nghiệp có nền tảng JavaScript/ReactJS tốt tham gia chương trình Fresher/Internship tại VNPT Technology.',
         responsibilities: 'Tham gia phát triển các sản phẩm Web SPA cho khách hàng quốc tế. Viết unit test và làm việc cùng mentor senior.',
         requirements: 'Nắm vững kiến thức HTML, CSS, JavaScript (ES6+). Đã từng làm bài tập lớn hoặc dự án cá nhân bằng ReactJS.',
         benefits: 'Hỗ trợ trợ cấp hàng tháng từ 4-7 triệu. Được đào tạo bài bản 1-1 với Chuyên gia. Cơ hội ký hợp đồng chính thức sau 3 tháng.',
@@ -270,7 +282,7 @@ const seedData = async () => {
         description: 'Tham gia xây dựng các dịch vụ backend microservices quy mô lớn sử dụng Node.js, Express và MongoDB/PostgreSQL.',
         responsibilities: 'Thiết kế RESTful API, tối ưu hóa truy vấn CSDL, tích hợp các dịch vụ bên thứ ba.',
         requirements: 'Tốt nghiệp đại học chuyên ngành CNTT. Hiểu rõ asynchronous programming trong Node.js.',
-        benefits: 'Lương thưởng cạnh tranh, bảo hiểm FPT Care, gói khám sức khỏe định kỳ. Du lịch nghỉ mát hàng năm.',
+        benefits: 'Lương thưởng cạnh tranh, bảo hiểm chăm sóc sức khỏe toàn diện, gói khám sức khỏe định kỳ. Du lịch nghỉ mát hàng năm.',
         deadline: '2026-11-30',
         skills: ['Node.js', 'Express', 'SQL', 'RESTful API']
       },
@@ -459,7 +471,7 @@ const seedData = async () => {
       [
         1,
         stud1ProfId,
-        'Kính gửi Bộ phận Tuyển dụng FPT Software. Em rất tự tin với kiến thức ReactJS và dự án thực tế đã hoàn thành.',
+        'Kính gửi Bộ phận Tuyển dụng VNPT Technology. Em rất tự tin với kiến thức ReactJS và dự án thực tế đã hoàn thành.',
         '0987654321',
         'student@example.com',
         'reviewing'
