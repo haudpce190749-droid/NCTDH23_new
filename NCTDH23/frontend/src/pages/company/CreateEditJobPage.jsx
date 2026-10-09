@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { PlusCircle, Save, ArrowLeft, Plus, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import { VIETNAM_PROVINCES } from '../../constants/provinces';
 
 const CreateEditJobPage = () => {
   const { id } = useParams();
@@ -218,11 +219,17 @@ const CreateEditJobPage = () => {
             <input
               type="text"
               required
-              placeholder="VD: Hà Nội, TP.HCM, Đà Nẵng..."
+              list="provinces-list"
+              placeholder="VD: Hà Nội, TP.HCM, Đà Nẵng, Cần Thơ..."
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl font-medium"
             />
+            <datalist id="provinces-list">
+              {VIETNAM_PROVINCES.map((prov) => (
+                <option key={prov} value={prov} />
+              ))}
+            </datalist>
           </div>
         </div>
 

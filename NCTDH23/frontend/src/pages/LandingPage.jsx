@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import JobCard from '../components/JobCard';
 import api from '../services/api';
+import { VIETNAM_PROVINCES } from '../constants/provinces';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -99,12 +100,14 @@ const LandingPage = () => {
                 <select
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  className="w-full text-sm text-gray-700 bg-transparent focus:outline-hidden"
+                  className="w-full text-sm text-gray-700 bg-transparent focus:outline-hidden cursor-pointer"
                 >
                   <option value="">Tất cả địa điểm</option>
-                  <option value="Hà Nội">Hà Nội</option>
-                  <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
-                  <option value="Đà Nẵng">Đà Nẵng</option>
+                  {VIETNAM_PROVINCES.map((prov) => (
+                    <option key={prov} value={prov}>
+                      {prov}
+                    </option>
+                  ))}
                 </select>
               </div>
 

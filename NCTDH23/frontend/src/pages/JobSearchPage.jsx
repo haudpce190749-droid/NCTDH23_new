@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Search, Filter, MapPin, DollarSign, Briefcase, SlidersHorizontal, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import JobCard from '../components/JobCard';
 import api from '../services/api';
+import { VIETNAM_PROVINCES } from '../constants/provinces';
 
 const JobSearchPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -66,7 +67,7 @@ const JobSearchPage = () => {
 
   useEffect(() => {
     fetchJobs();
-  }, [category, jobType, experience, locationType, minSalary, sort, page]);
+  }, [location, category, jobType, experience, locationType, minSalary, sort, page]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -106,13 +107,21 @@ const JobSearchPage = () => {
 
           <div className="md:w-64 flex items-center gap-2.5 px-4 py-3 bg-gray-50 rounded-xl border border-gray-200">
             <MapPin className="w-5 h-5 text-gray-400 flex-shrink-0" />
-            <input
-              type="text"
-              placeholder="Tất cả địa điểm..."
+            <select
               value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="w-full text-sm bg-transparent focus:outline-hidden text-gray-800"
-            />
+              onChange={(e) => {
+                setLocation(e.target.value);
+                setPage(1);
+              }}
+              className="w-full text-sm bg-transparent focus:outline-hidden text-gray-800 cursor-pointer"
+            >
+              <option value="">Tất cả địa điểm</option>
+              {VIETNAM_PROVINCES.map((prov) => (
+                <option key={prov} value={prov}>
+                  {prov}
+                </option>
+              ))}
+            </select>
           </div>
 
           <button
