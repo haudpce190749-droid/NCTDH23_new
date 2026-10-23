@@ -20,7 +20,7 @@ const seedData = async () => {
 
     // Check if data already exists
     const existingUsers = await db.asyncGet('SELECT COUNT(*) as count FROM users');
-    if (existingUsers && existingUsers.count > 0) {
+    if (existingUsers && Number(existingUsers.count) > 0) {
       console.log('CSDL đã có dữ liệu mẫu. Bỏ qua bước seed ban đầu.');
       return;
     }
@@ -432,6 +432,7 @@ const seedData = async () => {
       }
     ];
 
+    const createdJobIds = [];
     for (const job of jobs) {
       const skills = job.skills;
       delete job.skills;
@@ -458,6 +459,7 @@ const seedData = async () => {
         ]
       );
       const jobId = resJob.lastID;
+      createdJobIds.push(jobId);
 
       for (const sk of skills) {
         await db.asyncRun(`INSERT INTO job_skills (job_id, skill_name) VALUES (?, ?)`, [jobId, sk]);
@@ -465,35 +467,41 @@ const seedData = async () => {
     }
 
     // 5. Applications sample
-    await db.asyncRun(
-      `INSERT INTO applications (job_id, student_id, cover_letter, contact_phone, contact_email, status) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [
-        1,
-        stud1ProfId,
-        'Kính gửi Bộ phận Tuyển dụng VNPT Technology. Em rất tự tin với kiến thức ReactJS và dự án thực tế đã hoàn thành.',
-        '0987654321',
-        'student@example.com',
-        'reviewing'
-      ]
-    );
+    if (createdJobIds.length >= 3) {
+      try {
+        await db.asyncRun(
+          `INSERT INTO applications (job_id, student_id, cover_letter, contact_phone, contact_email, status) 
+           VALUES (?, ?, ?, ?, ?, ?)`,
+          [
+            createdJobIds[0],
+            stud1ProfId,
+            'Kính gửi Bộ phận Tuyển dụng VNPT Technology. Em rất tự tin với kiến thức ReactJS và dự án thực tế đã hoàn thành.',
+            '0987654321',
+            'student@example.com',
+            'reviewing'
+          ]
+        );
 
-    await db.asyncRun(
-      `INSERT INTO applications (job_id, student_id, cover_letter, contact_phone, contact_email, status) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [
-        3,
-        stud2ProfId,
-        'Kính gửi Nhóm tuyển dụng VNG. Em đính kèm portfolio thiết kế UI/UX ứng dụng Zalo bổ sung.',
-        '0912345678',
-        'nguyenvana@example.com',
-        'shortlisted'
-      ]
-    );
+        await db.asyncRun(
+          `INSERT INTO applications (job_id, student_id, cover_letter, contact_phone, contact_email, status) 
+           VALUES (?, ?, ?, ?, ?, ?)`,
+          [
+            createdJobIds[2],
+            stud2ProfId,
+            'Kính gửi Nhóm tuyển dụng VNG. Em đính kèm portfolio thiết kế UI/UX ứng dụng Zalo bổ sung.',
+            '0912345678',
+            'nguyenvana@example.com',
+            'shortlisted'
+          ]
+        );
 
-    // 6. Saved jobs sample
-    await db.asyncRun(`INSERT INTO saved_jobs (student_id, job_id) VALUES (?, ?)`, [stud1ProfId, 2]);
-    await db.asyncRun(`INSERT INTO saved_jobs (student_id, job_id) VALUES (?, ?)`, [stud1ProfId, 5]);
+        // 6. Saved jobs sample
+        await db.asyncRun(`INSERT INTO saved_jobs (student_id, job_id) VALUES (?, ?)`, [stud1ProfId, createdJobIds[1]]);
+        await db.asyncRun(`INSERT INTO saved_jobs (student_id, job_id) VALUES (?, ?)`, [stud1ProfId, createdJobIds[3] || createdJobIds[0]]);
+      } catch (appErr) {
+        console.warn('Bỏ qua tạo sample applications do ràng buộc:', appErr.message);
+      }
+    }
 
     console.log('Khởi tạo dữ liệu mẫu thành công (Seed data complete)!');
   } catch (err) {
