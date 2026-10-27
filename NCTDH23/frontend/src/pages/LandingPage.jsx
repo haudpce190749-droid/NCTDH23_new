@@ -16,7 +16,11 @@ import {
   Palette,
   Megaphone,
   Headphones,
-  ShieldCheck
+  ShieldCheck,
+  DollarSign,
+  GraduationCap,
+  Wrench,
+  Plane
 } from 'lucide-react';
 import JobCard from '../components/JobCard';
 import api from '../services/api';
@@ -56,8 +60,12 @@ const LandingPage = () => {
   const categories = [
     { title: 'Công nghệ thông tin', count: '120+ Việc làm', icon: Code, color: 'bg-sky-50 text-sky-600', cat: 'Công nghệ thông tin' },
     { title: 'Marketing / Truyền thông', count: '85+ Việc làm', icon: Megaphone, color: 'bg-purple-50 text-purple-600', cat: 'Marketing / Truyền thông' },
-    { title: 'Thiết kế UI/UX', count: '45+ Việc làm', icon: Palette, color: 'bg-pink-50 text-pink-600', cat: 'Thiết kế / Đồ họa' },
-    { title: 'Phân tích dữ liệu / AI', count: '60+ Việc làm', icon: LineChart, color: 'bg-emerald-50 text-emerald-600', cat: 'Dữ liệu / AI' },
+    { title: 'Thiết kế / Đồ họa', count: '45+ Việc làm', icon: Palette, color: 'bg-pink-50 text-pink-600', cat: 'Thiết kế / Đồ họa' },
+    { title: 'Dữ liệu / AI', count: '60+ Việc làm', icon: LineChart, color: 'bg-emerald-50 text-emerald-600', cat: 'Dữ liệu / AI' },
+    { title: 'Tài chính / Ngân hàng', count: '70+ Việc làm', icon: DollarSign, color: 'bg-yellow-50 text-yellow-600', cat: 'Tài chính / Ngân hàng' },
+    { title: 'Kinh doanh / Bán hàng', count: '90+ Việc làm', icon: TrendingUp, color: 'bg-orange-50 text-orange-600', cat: 'Kinh doanh / Bán hàng' },
+    { title: 'Giáo dục / Đào tạo', count: '40+ Việc làm', icon: GraduationCap, color: 'bg-indigo-50 text-indigo-600', cat: 'Giáo dục / Đào tạo' },
+    { title: 'Xây dựng / Cơ khí', count: '55+ Việc làm', icon: Wrench, color: 'bg-slate-50 text-slate-600', cat: 'Xây dựng / Kiến trúc' },
   ];
 
   return (

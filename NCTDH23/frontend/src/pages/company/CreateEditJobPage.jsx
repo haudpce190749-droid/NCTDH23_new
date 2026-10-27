@@ -13,6 +13,7 @@ const CreateEditJobPage = () => {
 
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Công nghệ thông tin');
+  const [customCategory, setCustomCategory] = useState('');
   const [jobType, setJobType] = useState('Full-time');
   const [experienceLevel, setExperienceLevel] = useState('Thực tập sinh');
   const [workLocationType, setWorkLocationType] = useState('Tại văn phòng');
@@ -83,7 +84,7 @@ const CreateEditJobPage = () => {
 
     const payload = {
       title,
-      category,
+      category: category === 'Khác' ? customCategory : category,
       jobType,
       experienceLevel,
       workLocationType,
@@ -167,7 +168,40 @@ const CreateEditJobPage = () => {
               <option value="Tài chính / Ngân hàng">Tài chính / Ngân hàng</option>
               <option value="Kinh doanh / Bán hàng">Kinh doanh / Bán hàng</option>
               <option value="Nhân sự / Hành chính">Nhân sự / Hành chính</option>
+              <option value="Kế toán / Kiểm toán">Kế toán / Kiểm toán</option>
+              <option value="Luật / Pháp lý">Luật / Pháp lý</option>
+              <option value="Giáo dục / Đào tạo">Giáo dục / Đào tạo</option>
+              <option value="Y tế / Dược phẩm">Y tế / Dược phẩm</option>
+              <option value="Xây dựng / Kiến trúc">Xây dựng / Kiến trúc</option>
+              <option value="Bất động sản">Bất động sản</option>
+              <option value="Du lịch / Nhà hàng / Khách sạn">Du lịch / Nhà hàng / Khách sạn</option>
+              <option value="Vận tải / Logistics">Vận tải / Logistics</option>
+              <option value="Sản xuất / Cơ khí">Sản xuất / Cơ khí</option>
+              <option value="Điện / Điện tử / Viễn thông">Điện / Điện tử / Viễn thông</option>
+              <option value="Nông nghiệp / Lâm nghiệp / Thủy sản">Nông nghiệp / Lâm nghiệp / Thủy sản</option>
+              <option value="Môi trường / Tài nguyên">Môi trường / Tài nguyên</option>
+              <option value="Dệt may / Da giày">Dệt may / Da giày</option>
+              <option value="Thực phẩm / Đồ uống">Thực phẩm / Đồ uống</option>
+              <option value="Truyền thông / Báo chí / Xuất bản">Truyền thông / Báo chí / Xuất bản</option>
+              <option value="Nghệ thuật / Giải trí">Nghệ thuật / Giải trí</option>
+              <option value="Bảo hiểm">Bảo hiểm</option>
+              <option value="Chứng khoán / Đầu tư">Chứng khoán / Đầu tư</option>
+              <option value="Thương mại điện tử">Thương mại điện tử</option>
+              <option value="An ninh / Bảo vệ">An ninh / Bảo vệ</option>
+              <option value="Dịch vụ khách hàng / Tư vấn">Dịch vụ khách hàng / Tư vấn</option>
+              <option value="Hàng không / Hàng hải">Hàng không / Hàng hải</option>
+              <option value="Khác">Khác (nhập bên dưới)</option>
             </select>
+            {category === 'Khác' && (
+              <input
+                type="text"
+                placeholder="Nhập tên ngành nghề..."
+                value={customCategory}
+                onChange={(e) => setCustomCategory(e.target.value)}
+                className="w-full p-3 mt-2 bg-gray-50 border border-gray-200 rounded-xl font-medium text-sm"
+                required
+              />
+            )}
           </div>
 
           <div>
